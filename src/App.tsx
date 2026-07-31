@@ -12,6 +12,7 @@ const GIRL_PICS = [
   { url: '/assets/images/IMG-20260730-WA0039(1).jpg', label: 'that glow' },
   { url: '/assets/images/IMG-20260730-WA0040(1).jpg', label: 'sunshine personified' },
   { url: '/assets/images/IMG-20260730-WA0042(1).jpg', label: 'pure elegance' },
+  { url: '/assets/videos/VID-20260730-WA0041.mp4', label: 'a moment with you', type: 'video' as const },
 ];
 
 const FALLBACK_IMG = 'data:image/svg+xml,' + encodeURIComponent(
@@ -299,11 +300,21 @@ const GalleryScreen = memo(function GalleryScreen({ onNext, onSelectPic }: { onN
                 onClick={(e) => { e.stopPropagation(); handleSelect(i); }}
               >
                 <div className="girl-card-inner">
-                  <img src={pic.url} alt={pic.label} className="girl-img"
-                    loading="lazy"
-                    onLoad={() => setLoaded((prev) => new Set(prev).add(i))}
-                    onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }} />
+                  {pic.type === 'video' ? (
+                    <video src={pic.url} className="girl-img" muted loop playsInline
+                      onMouseEnter={(e) => (e.target as HTMLVideoElement).play()}
+                      onMouseLeave={(e) => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0; }}
+                      onLoadStart={() => setLoaded((prev) => new Set(prev).add(i))} />
+                  ) : (
+                    <img src={pic.url} alt={pic.label} className="girl-img"
+                      loading="lazy"
+                      onLoad={() => setLoaded((prev) => new Set(prev).add(i))}
+                      onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }} />
+                  )}
                   <div className="girl-img-overlay" />
+                  {pic.type === 'video' && (
+                    <div className="video-play-icon"><Icon name="play_circle" size={32} style={{ color: '#fff' }} /></div>
+                  )}
                   {selected === i && (
                     <div className="girl-card-check"><Icon name="check_circle" size={28} style={{ color: '#ff1a56' }} /></div>
                   )}
