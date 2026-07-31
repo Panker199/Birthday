@@ -22,6 +22,110 @@ const FALLBACK_IMG = 'data:image/svg+xml,' + encodeURIComponent(
 const COLORS_CONFETTI = ['#ff1a56','#ff6b8a','#ffd93d','#ff9f43','#ff6bff','#ff3b5c','#ffd700'];
 const SHAPES_CONFETTI = ['●','♥','✦','✧','★','♦','❤️','✨','♡'];
 
+/* ─────────── Floating Sparkles ─────────── */
+
+const FloatingSparkles = memo(function FloatingSparkles() {
+  const [sparkles, setSparkles] = useState<{ id: number; x: number; y: number; size: number; dur: number; delay: number; op: number }[]>([]);
+
+  useEffect(() => {
+    const arr = Array.from({ length: 18 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 2 + Math.random() * 4,
+      dur: 4 + Math.random() * 6,
+      delay: Math.random() * 5,
+      op: 0.15 + Math.random() * 0.35,
+    }));
+    setSparkles(arr);
+  }, []);
+
+  return (
+    <div className="sparkles-layer">
+      {sparkles.map((s) => (
+        <span key={s.id} className="sparkle" style={{
+          left: `${s.x}%`, top: `${s.y}%`,
+          width: s.size, height: s.size,
+          animationDuration: `${s.dur}s`,
+          animationDelay: `${s.delay}s`,
+          opacity: s.op,
+        }} />
+      ))}
+    </div>
+  );
+});
+
+/* ─────────── Floating Hearts ─────────── */
+
+const FloatingHearts = memo(function FloatingHearts({ active }: { active: boolean }) {
+  const [hearts, setHearts] = useState<{ id: number; x: number; size: number; dur: number; delay: number }[]>([]);
+
+  useEffect(() => {
+    if (!active) { setHearts([]); return; }
+    const arr = Array.from({ length: 12 }, (_, i) => ({
+      id: Date.now() + i,
+      x: 10 + Math.random() * 80,
+      size: 14 + Math.random() * 18,
+      dur: 3 + Math.random() * 4,
+      delay: Math.random() * 3,
+    }));
+    setHearts(arr);
+    const t = setTimeout(() => setHearts([]), 7000);
+    return () => clearTimeout(t);
+  }, [active]);
+
+  if (!active || hearts.length === 0) return null;
+  return (
+    <div className="floating-hearts-layer">
+      {hearts.map((h) => (
+        <span key={h.id} className="floating-heart" style={{
+          left: `${h.x}%`,
+          fontSize: h.size,
+          animationDuration: `${h.dur}s`,
+          animationDelay: `${h.delay}s`,
+        }}>♥</span>
+      ))}
+    </div>
+  );
+});
+
+/* ─────────── Count Up ─────────── */
+
+function CountUp({ target, duration = 1200 }: { target: number; duration?: number }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (target === 0) { setVal(0); return; }
+    const start = performance.now();
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setVal(Math.round(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration]);
+  return <>{val}</>;
+}
+
+/* ─────────── Lightbox ─────────── */
+
+function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  return (
+    <div className="lightbox-overlay" onClick={onClose}>
+      <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+        <button className="lightbox-close" onClick={onClose}><Icon name="close" size={24} /></button>
+        <img src={src} alt={alt} className="lightbox-img" />
+      </div>
+    </div>
+  );
+}
+
 function GoldenPen({ size = 24 }: { size?: number }) {
   return (
     <span className="golden-pen-wrap">
@@ -107,12 +211,22 @@ const PasscodeScreen = memo(function PasscodeScreen({
   showHint: boolean; setShowHint: (v: boolean) => void;
   unlocked: boolean; onUnlock: () => void;
 }) {
+  const [shake, setShake] = useState(false);
+
   useEffect(() => {
     if (passcode === PASSKEY) {
       const t = setTimeout(onUnlock, 50);
       return () => clearTimeout(t);
     }
   }, [passcode, onUnlock]);
+
+  useEffect(() => {
+    if (passcode.length === 4 && passcode !== PASSKEY) {
+      setShake(true);
+      const t = setTimeout(() => { setShake(false); setPasscode(''); }, 500);
+      return () => clearTimeout(t);
+    }
+  }, [passcode, setPasscode]);
 
   const handlePad = useCallback((val: string) => {
     if (unlocked) return;
@@ -122,7 +236,7 @@ const PasscodeScreen = memo(function PasscodeScreen({
 
   return (
     <div className={`screen ${unlocked ? 'fade-out' : 'fade-in'}`}>
-      <div className="locked-card">
+      <div className={`locked-card ${shake ? 'shake-card' : ''}`}>
         <div className="locked-icon" onClick={() => setShowHint(true)}>
           <div className="avatar-ring">
             <img src={GIRL_PICS[0]!.url} alt="" className="avatar-img"
@@ -146,9 +260,6 @@ const PasscodeScreen = memo(function PasscodeScreen({
             </button>
           ))}
         </div>
-        {passcode.length === 4 && passcode !== PASSKEY && (
-          <div className="shake-text"><Icon name="error" size={12} /> incorrect — try again</div>
-        )}
       </div>
       {showHint && (
         <div className="overlay" onClick={() => setShowHint(false)}>
@@ -216,7 +327,7 @@ const LoadingScreen = memo(function LoadingScreen({ onDone }: { onDone: () => vo
         <div className="panda-sleep"><PandaSVG size={110} sleep /></div>
         <h2 className="welcome-title">It's Your Special Day</h2>
         <p className="welcome-sub">the universe made you, and here we are</p>
-        <button className="btn-primary" onClick={handleStart}><Icon name="play_arrow" size={16} /> start</button>
+        <button className="btn-primary pulse-btn" onClick={handleStart}><Icon name="play_arrow" size={16} /> start</button>
         <p className="btn-hint">touch to begin</p>
       </div>
     </div>
@@ -245,10 +356,14 @@ const AgeScreen = memo(function AgeScreen({ onNext }: { onNext: () => void }) {
         <div className="age-panda"><PandaSVG size={80} /></div>
         <h2 className="age-heading">happy birthday<br /><span className="age-name">my girl</span></h2>
         <div className="counter-row">
-          {(['Years', 'Months', 'Days'] as const).map((lbl, i) => (
-            <div key={lbl} className="counter-card" style={{ animationDelay: `${i * 0.12}s` }}>
-              <span className="counter-num">{i === 0 ? time.years : i === 1 ? time.months : time.days}</span>
-              <span className="counter-lbl">{lbl}</span>
+          {([
+            { lbl: 'Years', val: time.years },
+            { lbl: 'Months', val: time.months },
+            { lbl: 'Days', val: time.days },
+          ] as const).map((item, i) => (
+            <div key={item.lbl} className="counter-card" style={{ animationDelay: `${i * 0.12}s` }}>
+              <span className="counter-num"><CountUp target={item.val} duration={1200 + i * 200} /></span>
+              <span className="counter-lbl">{item.lbl}</span>
             </div>
           ))}
         </div>
@@ -264,6 +379,7 @@ const AgeScreen = memo(function AgeScreen({ onNext }: { onNext: () => void }) {
 const GalleryScreen = memo(function GalleryScreen({ onNext, onSelectPic }: { onNext: () => void; onSelectPic: (url: string) => void }) {
   const [loaded, setLoaded] = useState<Set<number>>(new Set());
   const [selected, setSelected] = useState<number | null>(null);
+  const [lightbox, setLightbox] = useState<number | null>(null);
 
   const handleSelect = useCallback((i: number) => {
     setSelected((prev) => {
@@ -289,7 +405,7 @@ const GalleryScreen = memo(function GalleryScreen({ onNext, onSelectPic }: { onN
     <div className="screen fade-in">
       <div className="gallery-wrap">
         <h2 className="section-title"><Icon name="photo_library" size={20} /> her gallery</h2>
-        <p className="section-sub">tap any picture to continue</p>
+        <p className="section-sub">tap to select · hold to preview</p>
 
         <div className="gallery-scroll">
           <div className="gallery-track">
@@ -298,6 +414,7 @@ const GalleryScreen = memo(function GalleryScreen({ onNext, onSelectPic }: { onN
                 key={i}
                 className={`girl-card ${loaded.has(i) ? 'loaded' : ''} ${selected === i ? 'selected' : ''}`}
                 onClick={(e) => { e.stopPropagation(); handleSelect(i); }}
+                onDoubleClick={(e) => { e.stopPropagation(); if (pic.type !== 'video') setLightbox(i); }}
               >
                 <div className="girl-card-inner">
                   {pic.type === 'video' ? (
@@ -333,6 +450,10 @@ const GalleryScreen = memo(function GalleryScreen({ onNext, onSelectPic }: { onN
           </button>
         </div>
       </div>
+
+      {lightbox !== null && (
+        <Lightbox src={GIRL_PICS[lightbox]!.url} alt={GIRL_PICS[lightbox]!.label} onClose={() => setLightbox(null)} />
+      )}
     </div>
   );
 });
@@ -378,6 +499,7 @@ const LetterScreen = memo(function LetterScreen({ selectedPic, onCelebrate, onRe
   const [opening, setOpening] = useState(false);
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState(false);
+  const [heartsActive, setHeartsActive] = useState(false);
   const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleOpen = useCallback(() => {
@@ -387,6 +509,8 @@ const LetterScreen = memo(function LetterScreen({ selectedPic, onCelebrate, onRe
       setOpening(false);
       setSealed(false);
       setOpen(true);
+      setHeartsActive(true);
+      setTimeout(() => setHeartsActive(false), 7000);
     }, 2000);
   }, [sealed]);
 
@@ -396,10 +520,11 @@ const LetterScreen = memo(function LetterScreen({ selectedPic, onCelebrate, onRe
 
   return (
     <div className="screen fade-in">
+      <FloatingHearts active={heartsActive} />
       <div className="letter-wrap">
         {sealed && !opening && (
           <div className="letter-sealed">
-            <p className="letter-prompt"><Icon name="touch_app" size={14} /> tap the heart to open your letter...</p>
+            <p className="letter-prompt"><Icon name="touch_app" size={14} /> tap the photo to open your letter...</p>
             <div className="heart-wrap" onClick={handleOpen}>
               <div className="heart-ring" />
               <img src={selectedPic} alt="tap to open" className="heart-icon girl-pic-icon" />
@@ -437,7 +562,7 @@ const LetterScreen = memo(function LetterScreen({ selectedPic, onCelebrate, onRe
               </div>
               {done && (
                 <div className="letter-actions">
-                  <button className="btn-primary celebrate-btn" onClick={onCelebrate}><Icon name="celebration" size={16} /> celebrate</button>
+                  <button className="btn-primary celebrate-btn pulse-btn" onClick={onCelebrate}><Icon name="celebration" size={16} /> celebrate</button>
                   <button className="btn-ghost" onClick={onRestart}><Icon name="replay" size={14} /> restart</button>
                 </div>
               )}
@@ -518,6 +643,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <FloatingSparkles />
       <ConfettiOverlay active={celebrating} />
       {screen === 'locked' && (
         <PasscodeScreen passcode={passcode} setPasscode={setPasscode}
