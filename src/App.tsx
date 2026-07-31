@@ -301,10 +301,12 @@ const GalleryScreen = memo(function GalleryScreen({ onNext, onSelectPic }: { onN
               >
                 <div className="girl-card-inner">
                   {pic.type === 'video' ? (
-                    <video src={pic.url} className="girl-img" muted loop playsInline
+                    <video src={pic.url} className="girl-img" muted loop playsInline preload="auto"
+                      style={{ objectFit: 'cover' }}
+                      onLoadedData={() => setLoaded((prev) => new Set(prev).add(i))}
+                      onError={() => setLoaded((prev) => new Set(prev).add(i))}
                       onMouseEnter={(e) => (e.target as HTMLVideoElement).play()}
-                      onMouseLeave={(e) => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0; }}
-                      onLoadStart={() => setLoaded((prev) => new Set(prev).add(i))} />
+                      onMouseLeave={(e) => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0; }} />
                   ) : (
                     <img src={pic.url} alt={pic.label} className="girl-img"
                       loading="lazy"
