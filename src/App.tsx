@@ -8,18 +8,10 @@ type Screen = 'locked' | 'loading' | 'age' | 'gallery' | 'letter';
 const NUMPAD = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
 
 const GIRL_PICS = [
-  { url: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=300&h=400&fit=crop&crop=face&q=80', label: 'your beautiful smile' },
-  { url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=400&fit=crop&crop=face&q=80', label: 'that glow' },
-  { url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=400&fit=crop&crop=face&q=80', label: 'sunshine personified' },
-  { url: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=300&h=400&fit=crop&crop=face&q=80', label: 'pure elegance' },
-  { url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&h=400&fit=crop&crop=face&q=80', label: 'peaceful moments' },
-  { url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=300&h=400&fit=crop&crop=face&q=80', label: 'laughing with you' },
-  { url: 'https://images.unsplash.com/photo-1548142813-c348350df52b?w=300&h=400&fit=crop&crop=face&q=80', label: 'stolen glances' },
-  { url: 'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=300&h=400&fit=crop&crop=face&q=80', label: 'my favorite view' },
-  { url: 'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=300&h=400&fit=crop&crop=face&q=80', label: 'everyday with you' },
-  { url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&h=400&fit=crop&crop=face&q=80', label: 'endless beauty' },
-  { url: 'https://images.unsplash.com/photo-1546961329-78bef0414d7c?w=300&h=400&fit=crop&crop=face&q=80', label: 'heart of gold' },
-  { url: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?w=300&h=400&fit=crop&crop=face&q=80', label: 'my everything' },
+  { url: '/assets/images/IMG-20260730-WA0038(2).jpg', label: 'your beautiful smile' },
+  { url: '/assets/images/IMG-20260730-WA0039(1).jpg', label: 'that glow' },
+  { url: '/assets/images/IMG-20260730-WA0040(1).jpg', label: 'sunshine personified' },
+  { url: '/assets/images/IMG-20260730-WA0042(1).jpg', label: 'pure elegance' },
 ];
 
 const FALLBACK_IMG = 'data:image/svg+xml,' + encodeURIComponent(
