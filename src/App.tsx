@@ -385,7 +385,7 @@ const LetterScreen = memo(function LetterScreen({ onCelebrate, onRestart }: { on
             <p className="letter-prompt"><Icon name="touch_app" size={14} /> tap the heart to open your letter...</p>
             <div className="heart-wrap" onClick={handleOpen}>
               <div className="heart-ring" />
-              <Icon name="favorite" size={52} className="heart-icon" style={{ color: '#ff1a56' }} />
+              <img src={GIRL_PICS[0]!.url} alt="tap to open" className="heart-icon girl-pic-icon" />
             </div>
           </div>
         )}
