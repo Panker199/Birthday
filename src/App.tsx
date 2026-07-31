@@ -260,13 +260,17 @@ const AgeScreen = memo(function AgeScreen({ onNext }: { onNext: () => void }) {
 
 /* ─────────── Gallery Screen ─────────── */
 
-const GalleryScreen = memo(function GalleryScreen({ onNext }: { onNext: () => void }) {
+const GalleryScreen = memo(function GalleryScreen({ onNext, onSelectPic }: { onNext: () => void; onSelectPic: (url: string) => void }) {
   const [loaded, setLoaded] = useState<Set<number>>(new Set());
   const [selected, setSelected] = useState<number | null>(null);
 
   const handleSelect = useCallback((i: number) => {
-    setSelected((prev) => (prev === i ? null : i));
-  }, []);
+    setSelected((prev) => {
+      const next = prev === i ? null : i;
+      if (next !== null) onSelectPic(GIRL_PICS[next]!.url);
+      return next;
+    });
+  }, [onSelectPic]);
 
   useEffect(() => {
     if (selected === null) return;
@@ -356,7 +360,7 @@ function TypewriterText({ text, speed = 40, onDone }: { text: string; speed?: nu
   );
 }
 
-const LetterScreen = memo(function LetterScreen({ onCelebrate, onRestart }: { onCelebrate: () => void; onRestart: () => void }) {
+const LetterScreen = memo(function LetterScreen({ selectedPic, onCelebrate, onRestart }: { selectedPic: string; onCelebrate: () => void; onRestart: () => void }) {
   const [sealed, setSealed] = useState(true);
   const [opening, setOpening] = useState(false);
   const [open, setOpen] = useState(false);
@@ -385,7 +389,7 @@ const LetterScreen = memo(function LetterScreen({ onCelebrate, onRestart }: { on
             <p className="letter-prompt"><Icon name="touch_app" size={14} /> tap the heart to open your letter...</p>
             <div className="heart-wrap" onClick={handleOpen}>
               <div className="heart-ring" />
-              <img src={GIRL_PICS[0]!.url} alt="tap to open" className="heart-icon girl-pic-icon" />
+              <img src={selectedPic} alt="tap to open" className="heart-icon girl-pic-icon" />
             </div>
           </div>
         )}
@@ -489,6 +493,7 @@ export default function App() {
   const [showHint, setShowHint] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
+  const [selectedPic, setSelectedPic] = useState(GIRL_PICS[0]!.url);
   const unlockRef = useRef(false);
 
   const handleUnlock = useCallback(() => {
@@ -507,9 +512,10 @@ export default function App() {
       )}
       {screen === 'loading' && <LoadingScreen onDone={() => setScreen('age')} />}
       {screen === 'age' && <AgeScreen onNext={() => setScreen('gallery')} />}
-      {screen === 'gallery' && <GalleryScreen onNext={() => setScreen('letter')} />}
+      {screen === 'gallery' && <GalleryScreen onNext={() => setScreen('letter')} onSelectPic={(url) => setSelectedPic(url)} />}
       {screen === 'letter' && (
         <LetterScreen
+          selectedPic={selectedPic}
           onCelebrate={() => { setCelebrating(true); setTimeout(() => setCelebrating(false), 9000); }}
           onRestart={() => { window.location.reload(); }}
         />
